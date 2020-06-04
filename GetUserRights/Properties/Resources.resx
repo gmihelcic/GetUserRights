@@ -130,7 +130,7 @@
     <value>USAGE:</value>
   </data>
   <data name="strUsageCmd" xml:space="preserve">
-    <value>    GetUserRights [[domain\]username</value>
+    <value>    GetUserRights [[domain\]username]</value>
   </data>
   <data name="strUsageExplain" xml:space="preserve">
     <value>If username is omitted Effective rights are evaluated for logged on user.</value>

@@ -97,7 +97,7 @@ namespace Microsoft.Pfe.GetUserRights.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to     GetUserRights [[domain\]username.
+        ///   Looks up a localized string similar to     GetUserRights [[domain\]username].
         /// </summary>
         internal static string strUsageCmd {
             get {
