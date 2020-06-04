@@ -21,70 +21,79 @@ namespace Microsoft.Pfe.GetUserRights
         /// <returns></returns>
         public static IEnumerable<string> GetUserMembership(string userName)
         {
-            if (string.IsNullOrWhiteSpace(userName))
-                throw new ArgumentNullException(Properties.Resources.ResourceManager.GetString("strUserName", CultureInfo.CurrentCulture),
-                    Properties.Resources.ResourceManager.GetString("strUserNameNull", CultureInfo.CurrentCulture));
-
-            int i = 0; // Counter for feedback
-
-            // Replace . with computerName or add ComputerName if provided only username
-            userName = UpdateUserName(userName);
-
-            // Split username to domain and username
-            string[] userParts = userName.Split(new string[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
-
-            UserPrincipal user = null;
-            bool isOK = true;
-
+            PrincipalContext domainContext = null;
             try
             {
-                ContextType cType = ContextType.Domain;
+                if (string.IsNullOrWhiteSpace(userName))
+                    throw new ArgumentNullException(Properties.Resources.ResourceManager.GetString("strUserName", CultureInfo.CurrentCulture),
+                        Properties.Resources.ResourceManager.GetString("strUserNameNull", CultureInfo.CurrentCulture));
 
-                // Determine context type - Computer or Domain
-                cType = (userParts[0].ToUpperInvariant() == Environment.MachineName.ToUpperInvariant()) ?
-                    ContextType.Machine : ContextType.Domain;
+                int i = 0; // Counter for feedback
 
-                // Get Context
-                using (PrincipalContext domainContext = new PrincipalContext(cType, userParts[0]))
+                // Replace . with computerName or add ComputerName if provided only username
+                userName = UpdateUserName(userName);
+
+                // Split username to domain and username
+                string[] userParts = userName.Split(new string[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
+
+                UserPrincipal user = null;
+                bool isOK = true;
+
+                try
+                {
+                    ContextType cType = ContextType.Domain;
+
+                    // Determine context type - Computer or Domain
+                    cType = (userParts[0].ToUpperInvariant() == Environment.MachineName.ToUpperInvariant()) ?
+                        ContextType.Machine : ContextType.Domain;
+
+                    // Get Context
+                    domainContext = new PrincipalContext(cType, userParts[0]);
 
                     // Find User account within context
                     user = UserPrincipal.FindByIdentity(domainContext, userParts[1]);
-            }
-            catch (PrincipalServerDownException)
-            {
-                isOK = false;
-            }
-
-            // Continue if we got user account
-            if (user != null && isOK)
-            {
-                // Get all Security Groups user belongs
-                PrincipalSearchResult<Principal> results = user.GetAuthorizationGroups();
-                foreach (Principal result in results)
+                }
+                catch (PrincipalServerDownException)
                 {
-                    i++;
-                    //Console.Write("\rDomain Groups Evaluated: {0}", i);
+                    isOK = false;
+                }
 
-                    // Get Local Groups where found group belongs
-                    foreach (string group in GetLocalMembership(result))
+                // Continue if we got user account
+                if (user != null && isOK)
+                {
+                    // Get all Security Groups user belongs
+                    PrincipalSearchResult<Principal> results = user.GetAuthorizationGroups();
+                    foreach (Principal result in results)
+                    {
+                        i++;
+                        //Console.Write("\rDomain Groups Evaluated: {0}", i);
+
+                        // Get Local Groups where found group belongs
+                        foreach (string group in GetLocalMembership(result))
+                            yield return group;
+
+                        // Return found group
+                        yield return String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", result.Context.Name, result.SamAccountName);
+                    }
+
+                    //Console.WriteLine();
+                    i = 0;
+
+                    // Enumerate all Local Groups where user belongs
+                    foreach (string group in GetLocalMembership(user))
+                    {
+                        i++;
+                        //Console.Write("\rLocal Groups Evaluated: {0}", i);
                         yield return group;
+                    }
 
-                    // Return found group
-                    yield return String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", result.Context.Name, result.SamAccountName);
+                    //Console.WriteLine();
                 }
-
-                //Console.WriteLine();
-                i = 0;
-
-                // Enumerate all Local Groups where user belongs
-                foreach (string group in GetLocalMembership(user))
-                {
-                    i++;
-                    //Console.Write("\rLocal Groups Evaluated: {0}", i);
-                    yield return group;
-                }
-
-                //Console.WriteLine();
+            }
+            finally
+            {
+                if (domainContext != null)
+                    domainContext.Dispose();
             }
         }
 

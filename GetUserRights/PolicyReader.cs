@@ -178,10 +178,6 @@ namespace Microsoft.Pfe.GetUserRights
                         _ = NativeMethods.LsaFreeMemory(rightsPtr);
                     }
                 }
-                else
-                {
-                    throw new UserNotFoundException(string.Format(CultureInfo.CurrentCulture, "User {0} can't be found!", userName));
-                }
             }
         }
 

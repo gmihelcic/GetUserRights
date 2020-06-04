@@ -30,20 +30,13 @@ namespace Microsoft.Pfe.GetUserRights
             // Display target user
             Console.WriteLine(Properties.Resources.ResourceManager.GetString("strEffectiveRights", CultureInfo.CurrentCulture), userName);
 
-            try
+            // Enumerate policies and print them on the screen
+            foreach (string right in PolicyReader.GetAllRights(userName))
             {
-                // Enumerate policies and print them on the screen
-                foreach (string right in PolicyReader.GetAllRights(userName))
-                {
-                    Console.WriteLine(right);
-                }
+                Console.WriteLine(right);
             }
-            catch (UserNotFoundException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }  
-        
+        }
+
         /// <summary>
         /// Print Application Usage instructions
         /// </summary>

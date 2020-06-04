@@ -63,7 +63,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="UserNotFoundException.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Win32Constants.cs" />
   </ItemGroup>
