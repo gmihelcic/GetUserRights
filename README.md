@@ -1,5 +1,5 @@
 # GetUserRights
-Checking all user permissions on the target computer
+Checking all user Rights on the target computer
 
 The purpose of this utility is to check resultant user rights on the computer where utility is ran both comming from GPO or Local Security Policy.
 
